@@ -31,6 +31,17 @@ function BookList() {
         // console.log("click buuton \n");
     };
 
+    const handleDeleteClick = (id) => {
+        axios.post('http://localhost:9000/api/v1/book/delete-book', {
+            id
+        })
+            .then(response => {
+                // BookList();
+                window.location.reload()
+            })
+            .catch(error => console.log(error));
+    };
+
     return (
         <div className="container">
             <h2 className="text-center">Book List</h2>
@@ -45,7 +56,6 @@ function BookList() {
                         {isLoggedIn && (
                             <>
                                 <th>Action</th>
-
                             </>
                         )}
                     </tr>
@@ -61,7 +71,7 @@ function BookList() {
                             {isLoggedIn && (
                                 <>
                                     <td><button className="btn btn-primary" onClick={() => handleViewClick(book.id)}>View</button></td>
-                                    <td><button className="btn btn-danger">Delete</button></td>
+                                    <td><button className="btn btn-danger" onClick={() => handleDeleteClick(book.id)}>Delete</button></td>
                                 </>
                             )}
                         </tr>
