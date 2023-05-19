@@ -31,8 +31,8 @@ function BookDetail(props) {
       console.log("case 1");
     } else {
       console.log("case 2");
-
-      axios.get(`http://localhost:9000/api/v1/book/book?id=` + id)
+      // http://localhost:9000
+      axios.get(`http://localhost:9081/reading-service/api/v1/book/book?id=` + id)
         .then(response => {
           let bookObject = response.data.data;
           console.log("response___" + JSON.stringify(bookObject));
@@ -55,7 +55,6 @@ function BookDetail(props) {
       const objectUrl = URL.createObjectURL(selectedFile)
       setPreview(objectUrl)
 
-      // free memory when ever this component is unmounted
       return () => URL.revokeObjectURL(objectUrl)
     }
 
@@ -107,8 +106,8 @@ function BookDetail(props) {
     let categoriesArr = categoryString;
     let authorsArr = authorString;
     let imgBase64 = base64String;
-
-    axios.post('http://localhost:9000/api/v1/book/update-book', {
+    // http://localhost:9000/
+    axios.post('http://localhost:9081/reading-service/api/v1/book/update-book', {
       id,
       name,
       authorsArr,

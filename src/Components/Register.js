@@ -22,7 +22,8 @@ function RegisterForm() {
     const onSubmit = async (data) => {
         data.gender = getGender(data.gender);
         try {
-            await axios.post("http://localhost:9000/api/v1/user/register", data);
+            // http://localhost:9000/
+            await axios.post("http://localhost:9081/reading-service/api/v1/user/register", data);
             // Đăng ký thành công, điều hướng đến trang chủ
             window.location.href = "/login";
         } catch (error) {
