@@ -1,44 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './BookDetail.css';
 
 function BookDetail(props) {
   const [book, setBook] = useState({});
+  const [id, setBookId] = useState('');
   const [editing, setEditing] = useState(false);
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
-  const [authors, setAuthor] = useState('');
   const [description, setDescription] = useState('');
   const [released, setReleased] = useState('');
   const [totalPages, setNumPages] = useState('');
-  const [categories, setCategory] = useState('');
   const [selectedFile, setSelectedFile] = useState()
   const [preview, setPreview] = useState()
+  const [base64String, setBase64String] = useState('');
+  const [authorString, setAuthorString] = useState('');
+  const [categoryString, setCategoryString] = useState('');
 
   useEffect(() => {
-    axios.get(`http://localhost:9000/api/v1/book/book?id=1`)
-      .then(response => {
-        console.log("response___" + JSON.stringify(response.data.data));
-        setBook(response.data.data);
-        setName(response.data.data.name);
-        setAuthor(response.data.data.authors);
-        setDescription(response.data.data.description);
-        setReleased(response.data.data.released);
-        setNumPages(response.data.data.totalPages);
-        setCategory(response.data.data.categories);
-      })
-      .catch(error => console.log(error));
+    const queryString = window.location.search;
+    console.log(queryString);
+    const urlParams = new URLSearchParams(queryString);
+    const id = urlParams.get('id')
+    console.log(id);
 
-    if (!selectedFile) {
-      setPreview(undefined)
-      return
+    if (id == 0) {
+      console.log("case 1");
+      handleAddClick();
+
+      console.log("case 1");
+    } else {
+      console.log("case 2");
+
+      axios.get(`http://localhost:9000/api/v1/book/book?id=` + id)
+        .then(response => {
+          let bookObject = response.data.data;
+          console.log("response___" + JSON.stringify(bookObject));
+          setBookId(bookObject.id);
+          setBook(bookObject);
+          setName(bookObject.name);
+          setDescription(bookObject.description);
+          setReleased(bookObject.released);
+          setNumPages(bookObject.totalPages);
+          setAuthorString(getListNameByArr(bookObject.authors));
+          setCategoryString(getListNameByArr(bookObject.categories));
+        })
+        .catch(error => console.log(error));
+
+      if (!selectedFile) {
+        setPreview(undefined)
+        return
+      }
+
+      const objectUrl = URL.createObjectURL(selectedFile)
+      setPreview(objectUrl)
+
+      // free memory when ever this component is unmounted
+      return () => URL.revokeObjectURL(objectUrl)
     }
 
-    const objectUrl = URL.createObjectURL(selectedFile)
-    setPreview(objectUrl)
 
-    // free memory when ever this component is unmounted
-    return () => URL.revokeObjectURL(objectUrl)
   }, [selectedFile]);
 
   const handleEditClick = () => {
@@ -54,7 +75,22 @@ function BookDetail(props) {
       return
     }
     setSelectedFile(e.target.files[0])
+    handleFileInputChange(e);
   };
+
+  const handleFileInputChange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+
+    reader.onload = () => {
+      const base64 = reader.result.split(',')[1];
+      setBase64String(base64);
+    };
+    console.log("base64___" + base64String)
+  };
+
   const getListNameByArr = (arr) => {
     let result = 'Ẩn danh';
     if (arr && arr.length) {
@@ -67,25 +103,23 @@ function BookDetail(props) {
     return result;
   };
 
-  const convertToArr = (inputString) => {
-    if (inputString) {
-      return JSON.stringify(authors.split(","));
-    }
-    return "";
-  }
-
   const handleSaveClick = () => {
-    axios.post('http://localhost:9000/api/v1/book/edit-book', {
-      id: book._id,
+    let categoriesArr = categoryString;
+    let authorsArr = authorString;
+    let imgBase64 = base64String;
+
+    axios.post('http://localhost:9000/api/v1/book/update-book', {
+      id,
       name,
-      authors,
+      authorsArr,
       description,
       released,
       totalPages,
-      categories,
-      selectedFile
+      categoriesArr,
+      imgBase64
     })
       .then(response => {
+        window.location.reload()
         setBook(response.data);
         setEditing(false);
       })
@@ -106,7 +140,7 @@ function BookDetail(props) {
 
           <div className="book-detail-input">
             <label>Author:</label>
-            <input value={authors} onChange={(e) => setAuthor(e.target.value)} />
+            <input type='text' value={authorString} onChange={(e) => setAuthorString(e.target.value)} />
           </div>
 
           <div className="book-detail-input">
@@ -133,7 +167,7 @@ function BookDetail(props) {
 
           <div className="book-detail-input">
             <label>Category:</label>
-            <input value={categories} onChange={(e) => setCategory(e.target.value)} />
+            <input type='text' value={categoryString} onChange={(e) => setCategoryString(e.target.value)} />
           </div>
 
           <button className="book-detail-save-btn" onClick={handleSaveClick}>Save</button>
@@ -142,29 +176,29 @@ function BookDetail(props) {
         <div className="book-detail-edit">
           <div className="book-detail-input">
             <label>Title:</label>
-            <input value={""} onChange={(e) => setName(e.target.value)} />
+            <input onChange={(e) => setName(e.target.value)} />
           </div>
 
           <div className="book-detail-input">
             <label>Author:</label>
-            <input value={""} onChange={(e) => setAuthor(e.target.value)} />
+            <input onChange={(e) => setAuthorString(e.target.value)} />
           </div>
 
           <div className="book-detail-input">
             <div className='book-detail-input-description'>
               <label>Description:</label>
-              <textarea value={""} onChange={(e) => setDescription(e.target.value)} />
+              <textarea onChange={(e) => setDescription(e.target.value)} />
             </div>
           </div>
 
           <div className="book-detail-input">
             <label>Release date:</label>
-            <input value={""} onChange={(e) => setReleased(e.target.value)} />
+            <input type='number' onChange={(e) => setReleased(e.target.value)} />
           </div>
 
           <div className="book-detail-input">
             <label>Number of pages:</label>
-            <input value={""} onChange={(e) => setNumPages(e.target.value)} />
+            <input type='number' onChange={(e) => setNumPages(e.target.value)} />
           </div>
           <div className="book-detail-input">
             <label>Image:</label>
@@ -174,7 +208,7 @@ function BookDetail(props) {
 
           <div className="book-detail-input">
             <label>Category:</label>
-            <input value={""} onChange={(e) => setCategory(e.target.value)} />
+            <input onChange={(e) => setCategoryString(e.target.value)} />
           </div>
 
           <button className="book-detail-save-btn" onClick={handleSaveClick}>Save</button>
@@ -185,13 +219,17 @@ function BookDetail(props) {
           <p><strong>Description:</strong> {book.description}</p>
           <p><strong>Release date:</strong> {book.released}</p>
           <p><strong>Number of pages:</strong> {book.totalPages}</p>
+          <p><strong>Image</strong></p>
+          <div>
+            <img src={book.pathImg} />
+          </div>
           <p><strong>Category:</strong>{getListNameByArr(book.categories)}</p>
           <div className="footer-content">
             <button className="book-detail-edit-btn" onClick={handleEditClick}>Edit</button>
           </div>
-          <div className="footer-content">
+          {/* <div className="footer-content">
             <button className="book-detail-edit-btn" onClick={handleAddClick}>Add</button>
-          </div>
+          </div> */}
         </div>
       )}
     </div>

@@ -5,7 +5,7 @@ import BookList from './Components/BookList';
 import { Route, Routes } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import BookDetail from './Components/BookDetail';
-
+import RegisterForm from './Components/Register';
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ function App() {
   return (
     <div>
       <Routes>
+        <Route path='/register/' element={<RegisterForm/>}/>
         <Route path='/BookList/' element={<BookList />} />      
         {isLoggedIn ? (
           <Route path='/BookList/' element={<BookList />} />

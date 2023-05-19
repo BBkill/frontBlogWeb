@@ -18,6 +18,16 @@ function BookList() {
         setIsLoggedIn(true);
     };
 
+    const handleLogout = () => {
+        setIsLoggedIn(false);
+        window.location.href = '/login'; 
+    }
+
+    const handleClickAdd = () => {
+        
+        window.location.href = '/book-detail/book?id=0'; 
+    }
+
     function checkToken() {
         const token = localStorage.getItem('token');
         if (token) {
@@ -45,6 +55,11 @@ function BookList() {
     return (
         <div className="container">
             <h2 className="text-center">Book List</h2>
+            <div className="logout-btn">
+                <button className="btn btn-primary" onClick={handleLogout}>Logout</button>
+                <button  className="btn-add btn btn-primary" onClick={handleClickAdd}>Add</button>
+            </div>
+        
             <table className="table table-striped">
                 <thead>
                     <tr>

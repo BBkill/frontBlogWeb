@@ -27,3 +27,8 @@
     padding: 0.5rem;
     text-align: right;
   }
+
+  .btn-add {
+    margin-left: 10px;
+    border: 10px;
+  }
